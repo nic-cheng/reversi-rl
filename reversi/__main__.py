@@ -27,5 +27,12 @@ if __name__ == "__main__":
     
     board.print_board()
     print("Game over!")
-    
+    black_count, white_count = board.count_pieces()
+    print(f"Black pieces: {black_count}, White pieces: {white_count}")
+    if black_count > white_count:
+        print("Black wins")
+    elif white_count > black_count:
+        print("White wins")
+    else:
+        print("Draw")
     

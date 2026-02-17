@@ -33,12 +33,15 @@ class CellState(Enum):
 
 
 class Board:
-    def __init__(self):
-        self.board = np.full((8, 8), CellState.EMPTY)
-        self.board[3, 3] = CellState.BLACK
-        self.board[3, 4] = CellState.WHITE
-        self.board[4, 3] = CellState.WHITE
-        self.board[4, 4] = CellState.BLACK
+    def __init__(self, initial_state: np.ndarray | None = None):
+        if initial_state is None:
+            self.board = np.full((8, 8), CellState.EMPTY)
+            self.board[3, 3] = CellState.BLACK
+            self.board[3, 4] = CellState.WHITE
+            self.board[4, 3] = CellState.WHITE
+            self.board[4, 4] = CellState.BLACK
+        else:
+            self.board = initial_state
 
     def print_board(self):
         """Displays the current board state with row and column indices for reference
@@ -59,6 +62,22 @@ class Board:
         """
         y, x = position
         return 0 <= y < 8 and 0 <= x < 8
+
+    def count_pieces(self) -> tuple[int, int]:
+        """Counts the number of black and white pieces on the board
+
+        Returns:
+            tuple[int, int]: A tuple (black_count, white_count)
+        """
+        black_count = 0
+        white_count = 0
+        for row in self.board:
+            for cell in row:
+                if cell == CellState.BLACK:
+                    black_count += 1
+                elif cell == CellState.WHITE:
+                    white_count += 1
+        return black_count, white_count
 
     def __getitem__(self, position: tuple[int, int]) -> CellState:
         """Reads the cell state at a given board position
@@ -100,6 +119,12 @@ class TestBoard:
         assert board[3, 4] == CellState.WHITE
         assert board[4, 3] == CellState.WHITE
         assert board[4, 4] == CellState.BLACK
+        
+        set_board = np.full((8, 8), CellState.BLACK)
+        custom_board = Board(initial_state=set_board)
+        assert custom_board[0, 0] == CellState.BLACK
+        assert custom_board[4, 3] == CellState.BLACK
+        
 
     def test_set_and_get_cell(self):
         board = Board()
@@ -129,6 +154,17 @@ class TestBoard:
             board[-1, 0] = CellState.BLACK
         with pytest.raises(IndexError):
             board[0, -1] = CellState.WHITE
+
+    def test_count_pieces(self):
+        board = Board()
+        board[0, 0] = CellState.BLACK
+        black_count, white_count = board.count_pieces()
+        assert black_count == 3
+        assert white_count == 2
+        board[1, 1] = CellState.WHITE
+        black_count, white_count = board.count_pieces()
+        assert black_count == 3
+        assert white_count == 3
 
 
 if __name__ == "__main__":
