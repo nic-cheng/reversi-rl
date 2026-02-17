@@ -1,5 +1,6 @@
 from enum import Enum
 import numpy as np
+import pytest
 
 light_mode = False
 
@@ -43,12 +44,54 @@ class Board:
         return 0 <= y < 8 and 0 <= x < 8
 
     def __getitem__(self, position: tuple[int, int]) -> CellState:
+        if not self.is_valid_cell(position):
+            raise IndexError(f"Position {position} out of bounds")
         return self.board[position]
 
     def __setitem__(self, position: tuple[int, int], value: CellState):
         if not self.is_valid_cell(position):
-            raise IndexError("Position out of bounds")
+            raise IndexError(f"Position {position} out of bounds")
         self.board[position] = value
+
+
+# Unit tests
+class TestBoard:
+    def test_initial_setup(self):
+        board = Board()
+        assert board[0, 0] == CellState.EMPTY
+        assert board[3, 3] == CellState.BLACK
+        assert board[3, 4] == CellState.WHITE
+        assert board[4, 3] == CellState.WHITE
+        assert board[4, 4] == CellState.BLACK
+
+    def test_set_and_get_cell(self):
+        board = Board()
+        board[0, 0] = CellState.BLACK
+        assert board[0, 0] == CellState.BLACK
+        board[5, 6] = CellState.WHITE
+        assert board[5, 6] == CellState.WHITE
+        board[5, 6] = CellState.EMPTY
+        assert board[5, 6] == CellState.EMPTY
+        assert board[7, 7] == CellState.EMPTY
+
+    def test_out_of_bounds_access(self):
+        board = Board()
+        with pytest.raises(IndexError):
+            _ = board[8, 0]
+        with pytest.raises(IndexError):
+            _ = board[0, 8]
+        with pytest.raises(IndexError):
+            _ = board[-1, 0]
+        with pytest.raises(IndexError):
+            _ = board[0, -1]
+        with pytest.raises(IndexError):
+            board[8, 0] = CellState.BLACK
+        with pytest.raises(IndexError):
+            board[0, 8] = CellState.WHITE
+        with pytest.raises(IndexError):
+            board[-1, 0] = CellState.BLACK
+        with pytest.raises(IndexError):
+            board[0, -1] = CellState.WHITE
 
 
 if __name__ == "__main__":
