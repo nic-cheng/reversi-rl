@@ -6,15 +6,22 @@ light_mode = False
 
 
 class CellState(Enum):
-    """
-    @brief Represents the state of a cell on the Reversi board.
-    Possible values: EMPTY, BLACK, WHITE
+    """Enum class for cell states
+        - EMPTY: Empty cell
+        - BLACK: Black piece
+        - WHITE: White piece
     """
     EMPTY = 0
     BLACK = 1
     WHITE = 2
 
     def __str__(self) -> str:
+        """Displays a cell state properly \n
+        Flips black and white pieces based on light_mode setting for accurate colouring
+
+        Returns:
+            str: String representation of cell state
+        """
         if self == CellState.EMPTY:
             return ' '
         elif self == CellState.BLACK:
@@ -34,21 +41,51 @@ class Board:
         self.board[4, 4] = CellState.BLACK
 
     def print_board(self):
+        """Displays the current board state with row and column indices for reference
+        """
         for i, row in enumerate(self.board):
             print(f"{i} |{' '.join(str(cell) for cell in row)}")
         print("   " + "-" * 15)
         print("   " + " ".join(str(i) for i in range(8)))
 
     def is_valid_cell(self, position: tuple[int, int]) -> bool:
+        """Check if the given position is within the board boundaries
+
+        Args:
+            position (tuple[int, int]): The (row, column) position to check
+
+        Returns:
+            bool: True if the position is within the board boundaries, False otherwise
+        """
         y, x = position
         return 0 <= y < 8 and 0 <= x < 8
 
     def __getitem__(self, position: tuple[int, int]) -> CellState:
+        """Reads the cell state at a given board position
+
+        Args:
+            position (tuple[int, int]): (row, col) position to read
+
+        Raises:
+            IndexError: If the position is out of bounds
+
+        Returns:
+            CellState: The state of the cell at the given position
+        """
         if not self.is_valid_cell(position):
             raise IndexError(f"Position {position} out of bounds")
         return self.board[position]
 
-    def __setitem__(self, position: tuple[int, int], value: CellState):
+    def __setitem__(self, position: tuple[int, int], value: CellState) -> None:
+        """Sets the cell state at a given board position
+
+        Args:
+            position (tuple[int, int]): (row, col) position to set
+            value (CellState): The new value to set the cell to
+
+        Raises:
+            IndexError: If the position is out of bounds
+        """
         if not self.is_valid_cell(position):
             raise IndexError(f"Position {position} out of bounds")
         self.board[position] = value
