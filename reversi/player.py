@@ -99,6 +99,18 @@ class Player:
 
         # Place the piece
         board[position] = self.color
+        for dy in [-1, 0, 1]:
+            for dx in [-1, 0, 1]:
+                if (dy, dx) != (0, 0) and self.is_direction_valid(board, position, (dy, dx)):
+                    # Flip pieces in this direction
+                    y, x = position
+                    y += dy
+                    x += dx
+                    # Direction already validated, flip until friendly piece
+                    while board[y, x] != self.color:
+                        board[y, x] = self.color
+                        y += dy
+                        x += dx
         return board
 
 
