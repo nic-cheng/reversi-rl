@@ -44,7 +44,6 @@ class Player:
 
         Raises:
             IndexError: If the position is out of bounds
-            ValueError: If the cell at the position is not empty
 
         Returns:
             bool: True if the move is valid, False otherwise
@@ -54,7 +53,7 @@ class Player:
             raise IndexError(f"Position {position} out of bounds")
 
         if board[position] != CellState.EMPTY:
-            raise ValueError(f"Cell at position {position} is not empty")
+            return False
 
         # Check in all 8 directions for valid flips
         directions = [(-1, -1), (-1, 0), (-1, 1),
@@ -65,6 +64,21 @@ class Player:
             if self.is_direction_valid(board, position, (dy, dx)):
                 return True
         return False
+
+    def get_valid_moves(self, board: Board) -> list[tuple[int, int]]:
+        """Returns a list of valid moves for the player
+
+        Args:
+            board (Board): The current game board
+        Returns:
+            list[tuple[int, int]]: A list of (row, column) positions that are valid moves for the player
+        """
+        valid_moves = []
+        for y in range(8):
+            for x in range(8):
+                if self.is_valid_move(board, (y, x)):
+                    valid_moves.append((y, x))
+        return valid_moves
 
     def make_move(self, board: Board, position: tuple[int, int]) -> Board:
         """Attempts to make a move for the player at the specified position
@@ -99,8 +113,7 @@ class TestPlayer:
         assert player_w.is_valid_move(board, (2, 3))
 
         # Invalid move for white (cell not empty)
-        with pytest.raises(ValueError):
-            player_w.is_valid_move(board, (3, 3))
+        assert not player_w.is_valid_move(board, (3, 3))
 
         # Invalid move for white (no flips)
         assert not player_w.is_valid_move(board, (0, 0))
@@ -129,6 +142,27 @@ class TestPlayer:
         # Attempt to make a move out of bounds
         with pytest.raises(IndexError):
             player_w.make_move(board, (8, 0))
+    
+    def test_get_valid_moves(self):
+        board = Board()
+        player_b = Player(CellState.BLACK)
+        player_w = Player(CellState.WHITE)
+
+        # Initial valid moves for white
+        valid_moves_w = player_w.get_valid_moves(board)
+        assert (2, 3) in valid_moves_w
+        assert (3, 2) in valid_moves_w
+        assert (4, 5) in valid_moves_w
+        assert (5, 4) in valid_moves_w
+        assert len(valid_moves_w) == 4
+
+        # Initial valid moves for black
+        valid_moves_b = player_b.get_valid_moves(board)
+        assert (2, 4) in valid_moves_b
+        assert (3, 5) in valid_moves_b
+        assert (4, 2) in valid_moves_b
+        assert (5, 3) in valid_moves_b
+        assert len(valid_moves_b) == 4
 
 
 if __name__ == "__main__":
@@ -142,3 +176,4 @@ if __name__ == "__main__":
     # Check some moves for player 1
     print(player_w.is_valid_move(board, (2, 3)))  # Should be True
     print(player_b.is_valid_move(board, (0, 0)))  # Should be False
+    print(player_b.get_valid_moves(board))
