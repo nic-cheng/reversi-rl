@@ -88,6 +88,49 @@ class Player:
         return board
 
 
+# Unit tests
+class TestPlayer:
+    def test_valid_move(self):
+        board = Board()
+        player_b = Player(CellState.BLACK)
+        player_w = Player(CellState.WHITE)
+
+        # Valid move for white
+        assert player_w.is_valid_move(board, (2, 3))
+
+        # Invalid move for white (cell not empty)
+        with pytest.raises(ValueError):
+            player_w.is_valid_move(board, (3, 3))
+
+        # Invalid move for white (no flips)
+        assert not player_w.is_valid_move(board, (0, 0))
+
+        # Invalid move for black (out of bounds)
+        with pytest.raises(IndexError):
+            player_b.is_valid_move(board, (8, 0))
+
+    def test_make_move(self):
+        board = Board()
+        player_b = Player(CellState.BLACK)
+        player_w = Player(CellState.WHITE)
+
+        # Make a valid move
+        updated_board = player_w.make_move(board, (2, 3))
+        assert updated_board[2, 3] == CellState.WHITE
+
+        # Attempt to make an invalid move
+        with pytest.raises(ValueError):
+            player_b.make_move(board, (0, 0))
+
+        # Attempt to make a move on a non-empty cell
+        with pytest.raises(ValueError):
+            player_b.make_move(board, (3, 3))
+
+        # Attempt to make a move out of bounds
+        with pytest.raises(IndexError):
+            player_w.make_move(board, (8, 0))
+
+
 if __name__ == "__main__":
     # Example usage
     board = Board()
