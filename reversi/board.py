@@ -1,11 +1,24 @@
 from enum import Enum
 from typing import NamedTuple
 
+import pytest
+
 
 class Colour(Enum):
     BLACK = 1
     EMPTY = 0
     WHITE = -1
+
+    @classmethod
+    def from_char(cls, char: str) -> "Colour":
+        if char == "B":
+            return cls.BLACK
+        elif char == "W":
+            return cls.WHITE
+        elif char == ".":
+            return cls.EMPTY
+        else:
+            raise ValueError(f"Invalid character for Colour: {char}")
 
     def render(self):
         if self == self.BLACK:
@@ -55,7 +68,7 @@ class Board():
                     board_row.append(Colour.WHITE)
             grid.append(board_row)
 
-        return cls(grid, Colour.BLACK if player_to_move == "b" else Colour.WHITE)
+        return cls(grid, Colour.from_char(player_to_move))
 
     def to_fen(self) -> str:
         """Output the board state in an adapted form of FEN notation for reversi
@@ -86,6 +99,26 @@ class Board():
             print(f"{i}| {' '.join(piece.render() for piece in row)}")
         print("  " + "-" * (Board.SIZE * 2))
         print("   " + " ".join(str(i) for i in range(Board.SIZE)))
+
+
+class TestBoard():
+    def test_fen_conversion(self):
+        fen = "8/8/8/3WB3/3BW3/8/8/8 B"
+        board = Board.from_fen(fen)
+        assert board.grid == [
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.WHITE,
+                Colour.BLACK, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY],
+            [Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.BLACK,
+                Colour.WHITE, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY],
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8
+        ]
+        assert board.player_to_move == Colour.BLACK
+        assert board.to_fen() == fen
 
 
 if __name__ == "__main__":
