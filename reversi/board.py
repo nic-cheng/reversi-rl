@@ -19,6 +19,14 @@ class Colour(Enum):
         else:
             raise ValueError(f"Invalid character for Colour: {char}")
 
+    def opponent(self) -> "Colour":
+        """Get the opposite colour
+
+        Returns:
+            Colour: BLACK <-> WHITE, EMPTY -> EMPTY
+        """
+        return Colour(-self.value)
+
     def render(self):
         if self == self.BLACK:
             return "◯"
@@ -42,6 +50,27 @@ class Board():
     def __init__(self, grid: list[list[Colour]], player_to_move: Colour):
         self.grid: list[list[Colour]] = grid
         self.player_to_move: Colour = player_to_move
+        
+    def copy(self) -> "Board":
+        """Create a deep copy of the board
+
+        Returns:
+            Board: A new Board instance with the same grid and player to move
+        """
+        new_grid = [row.copy() for row in self.grid]
+        return Board(new_grid, self.player_to_move)
+
+    @classmethod
+    def valid_square(cls, position: tuple[int, int]) -> bool:
+        """Check if a position is within the bounds of the board
+
+        Args:
+            position (tuple[int, int]): The position to check
+        Returns:
+            bool: True if the position is valid, False otherwise
+        """
+        row, col = position
+        return 0 <= row < Board.SIZE and 0 <= col < Board.SIZE
 
     @classmethod
     def from_fen(cls, fen: str = "8/8/8/3WB3/3BW3/8/8/8 B") -> "Board":
