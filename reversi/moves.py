@@ -1,0 +1,121 @@
+from .board import Board, Colour
+import pytest
+
+MOVE_DIRECTIONS = [(d_row, d_col) for d_row in [-1, 0, 1] for d_col in [-1, 0, 1] if not (d_row, d_col) == (0, 0)]
+
+def is_move_direction_valid(board: Board, position: tuple[int, int], direction: tuple[int, int]) -> bool:
+    """Check if a move is valid from a given direction
+
+    Args:
+        board (Board): The board state and current player
+        position (tuple[int, int]): The square to place the piece on
+        direction (tuple[int, int]): (dx, dy) step vector
+
+    Returns:
+        bool: True if the move is valid in the given direction, False otherwise
+    """
+    ##
+    # A move is valid in a direction if there is a line of opponent pieces and then a friendly piece
+    # The line can be of length 1
+    # Empty squares or the edge of the board break the line
+    ##
+    
+    row, col = position
+    
+    # Guard against out of bounds
+    if not Board.valid_square((row, col)):
+        raise IndexError(f"Position {position} out of bounds")
+    
+    # Guard against no direction
+    if direction == (0, 0):
+        raise ValueError("Direction cannot be (0, 0)")
+    
+    # Guard against occupied square
+    if board[(row, col)] != Colour.EMPTY:
+        return False
+    
+    
+    d_row, d_col = direction
+    row += d_row
+    col += d_col
+    enemy_piece_encountered = False
+    
+    # First step must be an opponent piece
+    if not Board.valid_square((row, col)):
+        return False
+    
+    # Continue until line of opponents ends
+    while Board.valid_square((row, col)) and board[(row, col)] == board.player_to_move.opponent():
+        row += d_row
+        col += d_col
+        enemy_piece_encountered = True
+
+    # Lazy evaluation means the value is only read if the ending square is in bounds
+    # The line is valid only if it ends with a friendly piece and there was an enemy piece in between
+    return Board.valid_square((row, col)) and board[(row, col)] == board.player_to_move and enemy_piece_encountered
+
+def is_move_valid(board: Board, position: tuple[int, int]) -> bool:
+    """Check if a move is valid (in any direction)
+
+    Args:
+        board (Board): The board state and current player
+        position (tuple[int, int]): The square to place the piece on
+    Returns:
+        bool: True if the move is valid, False otherwise
+    """
+    for d_row, d_col in MOVE_DIRECTIONS:
+        if is_move_direction_valid(board, position, (d_row, d_col)):
+            return True
+    return False
+
+def get_valid_moves(board: Board) -> list[tuple[int, int]]:
+    """Get a list of valid moves for the current player
+
+    Args:
+        board (Board): The board state and current player
+
+    Returns:
+        list[tuple[int, int]]: A list of valid move positions
+    """
+    valid_moves = []
+    for row in range(Board.SIZE):
+        for col in range(Board.SIZE):
+            if is_move_valid(board, (row, col)):
+                valid_moves.append((row, col))
+    return valid_moves
+
+def make_move(board: Board, position: tuple[int, int]) -> Board:
+    """Make a move on the board and return the new board state
+
+    Args:
+        board (Board): The current board state and player
+        position (tuple[int, int]): The square to place the piece on
+
+    Returns:
+        Board: The new board state after making the move
+    """
+    if not is_move_valid(board, position):
+        raise ValueError(f"Move {position} is not valid for player {board.player_to_move}")
+    
+    new_board = board.copy()
+    new_board[position] = board.player_to_move
+    
+    # Flip enemy pieces until a friendly piece is encountered in all valid directions
+    for d_row, d_col in MOVE_DIRECTIONS:
+        if is_move_direction_valid(board, position, (d_row, d_col)):
+            row, col = position
+            row += d_row
+            col += d_col
+            while Board.valid_square((row, col)) and new_board[(row, col)] != board.player_to_move:
+                new_board[(row, col)] = board.player_to_move
+                row += d_row
+                col += d_col
+    
+    new_board.player_to_move = board.player_to_move.opponent()
+    return new_board
+
+if __name__ == "__main__":
+    board = Board.from_fen();
+    board.display();
+    make_move(board, (2, 3)).display();
+    print(get_valid_moves(board))
