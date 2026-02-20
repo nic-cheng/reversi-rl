@@ -6,7 +6,7 @@ from gymnasium.utils.env_checker import check_env
 import reversi
 
 class ReversiEnv(gym.Env):
-    def __init__(self, board: Optional[reversi.Board]):
+    def __init__(self, board: Optional[reversi.Board] = None):
         self.board = board if board is not None else reversi.Board.from_fen()
         
         # Observation as an 8x8 grid with values -1 (opponent), 0 (empty), 1 (current player)
@@ -124,5 +124,5 @@ gym.register(
 
 if __name__ == "__main__":
     # Check that the environment adheres to the Gymnasium API
-    env = ReversiEnv(None)
+    env = gym.make("gymnasium_env/Reversi-v0")    
     check_env(env)
