@@ -100,6 +100,18 @@ class Board():
         print("  " + "-" * (Board.SIZE * 2))
         print("   " + " ".join(str(i) for i in range(Board.SIZE)))
 
+    def __getitem__(self, position: tuple[int, int]) -> Colour:
+        if not (0 <= position[0] < Board.SIZE and 0 <= position[1] < Board.SIZE):
+            raise IndexError(f"Position {position} out of bounds")
+        row, col = position
+        return self.grid[row][col]
+    
+    def __setitem__(self, position: tuple[int, int], value: Colour) -> None:
+        if not (0 <= position[0] < Board.SIZE and 0 <= position[1] < Board.SIZE):
+            raise IndexError(f"Position {position} out of bounds")
+        row, col = position
+        self.grid[row][col] = value
+
 
 class TestBoard():
     def test_fen_conversion(self):
@@ -119,6 +131,36 @@ class TestBoard():
         ]
         assert board.player_to_move == Colour.BLACK
         assert board.to_fen() == fen
+        
+        fen = "BB5W/8/8/8/8/8/8/8 W"
+        board = Board.from_fen(fen)
+        assert board.grid == [
+            [Colour.BLACK, Colour.BLACK, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.WHITE],
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8,
+            [Colour.EMPTY] * 8
+        ]
+        assert board.player_to_move == Colour.WHITE
+        assert board.to_fen() == fen
+
+    def test_get_set_item(self):
+        board = Board.from_fen()
+        assert board[(3, 3)] == Colour.WHITE
+        assert board[(3, 4)] == Colour.BLACK
+        assert board[(0, 0)] == Colour.EMPTY
+
+        board[(0, 0)] = Colour.BLACK
+        assert board[(0, 0)] == Colour.BLACK
+
+        with pytest.raises(IndexError):
+            board[(-1, 0)]
+        
+        with pytest.raises(IndexError):
+            board[(8, 0)] = Colour.WHITE
 
 
 if __name__ == "__main__":
