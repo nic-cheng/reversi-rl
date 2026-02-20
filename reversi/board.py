@@ -50,7 +50,7 @@ class Board():
     def __init__(self, grid: list[list[Colour]], player_to_move: Colour):
         self.grid: list[list[Colour]] = grid
         self.player_to_move: Colour = player_to_move
-        
+
     def copy(self) -> "Board":
         """Create a deep copy of the board
 
@@ -121,6 +121,9 @@ class Board():
             fen += fen_row + "/"
         return fen[:-1] + " " + str(self.player_to_move)
 
+    def __str__(self):
+        return self.to_fen()
+
     def display(self) -> None:
         """Display the board in a human-readable format, with row and column numbers"""
         for i, row in enumerate(self.grid):
@@ -133,7 +136,7 @@ class Board():
             raise IndexError(f"Position {position} out of bounds")
         row, col = position
         return self.grid[row][col]
-    
+
     def __setitem__(self, position: tuple[int, int], value: Colour) -> None:
         if not (0 <= position[0] < Board.SIZE and 0 <= position[1] < Board.SIZE):
             raise IndexError(f"Position {position} out of bounds")
@@ -159,11 +162,12 @@ class TestBoard():
         ]
         assert board.player_to_move == Colour.BLACK
         assert board.to_fen() == fen
-        
+
         fen = "BB5W/8/8/8/8/8/8/8 W"
         board = Board.from_fen(fen)
         assert board.grid == [
-            [Colour.BLACK, Colour.BLACK, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.WHITE],
+            [Colour.BLACK, Colour.BLACK, Colour.EMPTY, Colour.EMPTY,
+                Colour.EMPTY, Colour.EMPTY, Colour.EMPTY, Colour.WHITE],
             [Colour.EMPTY] * 8,
             [Colour.EMPTY] * 8,
             [Colour.EMPTY] * 8,
@@ -186,7 +190,7 @@ class TestBoard():
 
         with pytest.raises(IndexError):
             board[(-1, 0)]
-        
+
         with pytest.raises(IndexError):
             board[(8, 0)] = Colour.WHITE
 
