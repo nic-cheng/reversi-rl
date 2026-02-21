@@ -119,6 +119,18 @@ def make_move(board: Board, position: tuple[int, int]) -> Board:
     new_board.player_to_move = board.player_to_move.opponent()
     return new_board
 
+def pass_turn(board: Board) -> Board:
+    """Pass the turn to the opponent without making a move
+
+    Args:
+        board (Board): The current board state and player
+
+    Returns:
+        Board: A new board state with the same grid but opponent to move
+    """
+    new_board = board.copy()
+    new_board.player_to_move = board.player_to_move.opponent()
+    return new_board
 
 class TestMoves:
     def test_is_move_direction_valid(self):
@@ -157,12 +169,25 @@ class TestMoves:
         new_board = make_move(board, (2, 3))
         expected_fen = "8/8/3B4/3BB3/3BW3/8/8/8 W"
         assert new_board.to_fen() == expected_fen
+    
+    def test_pass_turn(self):
+        board = Board.from_fen()
+        new_board = pass_turn(board)
+        expected_fen = "8/8/8/3WB3/3BW3/8/8/8 W"
+        assert new_board.to_fen() == expected_fen
+        board = make_move(board, (2, 3))
+        assert board.to_fen() == "8/8/3B4/3BB3/3BW3/8/8/8 W"
+        assert new_board.to_fen() == "8/8/8/3WB3/3BW3/8/8/8 W"
 
 
 if __name__ == "__main__":
-    board = Board.from_fen()
-    board.display()
+    # board = Board.from_fen()
+    # board.display()
+    # print(get_valid_moves(board))
+    # new_board = make_move(board, (2, 3))
+    # new_board.display()
+    # print(str(new_board))
+    board = Board.from_fen("1BBBBBBW/WWWWBBWW/WWWWWWBW/WWWWWWWW/WWBBWWWW/WWBBBWWW/WWBBWWWW/WWWWWWWW W")
     print(get_valid_moves(board))
-    new_board = make_move(board, (2, 3))
-    new_board.display()
-    print(str(new_board))
+    board = make_move(board, (0, 0))
+    board.display()
