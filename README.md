@@ -1,2 +1,2 @@
 # Reversi RL
-Reinforcement learning based reversi bot
+Reinforcement learning based bot for the board game reversi (using the Othello ruleset)
