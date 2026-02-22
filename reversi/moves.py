@@ -42,7 +42,7 @@ def is_move_direction_valid(board: Board, position: tuple[int, int], direction: 
     enemy_piece_encountered = False
 
     # First step must be an opponent piece
-    if not Board.valid_square((row, col)):
+    if not Board.valid_square((row, col)) or board[(row, col)] != board.player_to_move.opponent():
         return False
 
     # Continue until line of opponents ends
