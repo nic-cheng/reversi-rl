@@ -92,7 +92,7 @@ class ReversiEnv(gym.Env):
         super().reset(seed=seed)
 
         # Start from the standard initial board state
-        self.board = reversi.Board.from_fen()
+        self.board = reversi.random_board(seed=seed, approx_moves_to_end=None)
 
         observation = self._get_obs()
         info = self._get_info()
