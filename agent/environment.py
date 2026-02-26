@@ -5,6 +5,7 @@ from gymnasium.utils.env_checker import check_env
 
 import reversi
 
+import pytest
 
 class ReversiEnv(gym.Env):
     def __init__(self, board: Optional[reversi.Board] = None):
@@ -22,7 +23,7 @@ class ReversiEnv(gym.Env):
             action // 8, action % 8)  # Convert index to (row, col)
 
     @classmethod
-    def board_from_obs(cls, obs: np.ndarray, player_to_move: reversi.Colour = reversi.Colour.BLACK) -> reversi.Board:
+    def board_from_obs(cls, obs: np.ndarray, player_to_move: reversi.Colour) -> reversi.Board:
         """Convert an observation back to a Board object.
 
         Args:
@@ -35,7 +36,7 @@ class ReversiEnv(gym.Env):
         grid = []
         for i in range(0, 64, 8):
             row = []
-            for cell in obs[0][i:i+8]:
+            for cell in obs[i:i+8]:
                 if cell == 1:
                     row.append(player_to_move)
                 elif cell == -1:
@@ -61,7 +62,7 @@ class ReversiEnv(gym.Env):
                 return -1
 
         return np.array([
-            cell_state_to_value(self.board[(row, col)], self.board.player_to_move) for col in range(8) for row in range(8)
+            cell_state_to_value(self.board[(row, col)], self.board.player_to_move) for row in range(8) for col in range(8)
         ], dtype=np.int8)
 
     def _get_info(self):
@@ -151,6 +152,17 @@ class ReversiEnv(gym.Env):
 
         return observation, reward, terminated, truncated, info
 
+class TestReversiEnv:
+    def test_board_obs_conversion(self):
+        for seed in [42, 123, 456]:
+            env = ReversiEnv()
+            obs, _ = env.reset(seed=seed)
+            board = env.board_from_obs(obs, env.board.player_to_move)
+            env.board.display()
+            print(env.board.to_fen())
+            board.display()
+            print(board.to_fen())
+            assert board.to_fen() == env.board.to_fen()
 
 # Register the environment so we can create it with gym.make()
 gym.register(

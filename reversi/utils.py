@@ -53,7 +53,6 @@ def random_board(seed: Optional[int] = None, approx_moves_to_end: Optional[int] 
     """
     if seed is None:
         seed = random.randint(0, pow(10, 28))
-        # print(f"Generated seed: {seed}")
 
     random.seed(seed)
 
