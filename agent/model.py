@@ -24,16 +24,20 @@ class DQN(nn.Module):
         x = F.relu(self.layer2(x))
         return self.layer3(x)
 
+class HyperParams:
+    def __init__(self, batch_size=128, gamma=0.999, eps_start=0.9, eps_end=0.05, eps_decay=200, target_update=10):
+        self.BATCH_SIZE = batch_size
+        self.GAMMA = gamma
+        self.EPS_START = eps_start
+        self.EPS_END = eps_end
+        self.EPS_DECAY = eps_decay
+        self.TARGET_UPDATE = target_update
+
 class Parameters:
     def __init__(self):
         self.env: ReversiEnv = ReversiEnv()
         self.device = torch.device("mps" if torch.mps.is_available() else "cpu")
-        self.BATCH_SIZE = 128
-        self.GAMMA = 0.999
-        self.EPS_START = 0.9
-        self.EPS_END = 0.05
-        self.EPS_DECAY = 200
-        self.TARGET_UPDATE = 10
+        self.hyperparams = HyperParams()
 
 def select_action(state: np.ndarray, policy: nn.Module, steps_done: int, params: Parameters) -> torch.Tensor:
     """Selects an action using epsilon-greedy strategy, with invalid moves filtered
@@ -48,8 +52,8 @@ def select_action(state: np.ndarray, policy: nn.Module, steps_done: int, params:
         torch.Tensor: The selected action as a tensor.
     """
     sample = random.random()
-    eps_threshold = params.EPS_END + (params.EPS_START - params.EPS_END) * \
-        math.exp(-1. * steps_done / params.EPS_DECAY)
+    eps_threshold = params.hyperparams.EPS_END + (params.hyperparams.EPS_START - params.hyperparams.EPS_END) * \
+        math.exp(-1. * steps_done / params.hyperparams.EPS_DECAY)
     steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
