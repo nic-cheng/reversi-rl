@@ -18,9 +18,25 @@ class ReversiEnv(gym.Env):
         self.observation_space = gym.spaces.Box(
             low=-1, high=1, shape=(1, 64), dtype=np.int8)
 
-        self.action_space = gym.spaces.Discrete(64)  # Squares encoded by index
-        self._action_to_move = lambda action: (
-            action // 8, action % 8)  # Convert index to (row, col)
+        # One-hot action vector of length 64. Exactly one index should be 1.
+        self.action_space = gym.spaces.MultiBinary(64)
+
+    def _decode_action(self, action) -> tuple[tuple[int, int], bool]:
+        """Decode a one-hot action vector to a board move.
+
+        Returns:
+            tuple: ((row, col), is_valid_one_hot)
+        """
+        action_arr = np.asarray(action, dtype=np.int8).reshape(-1)
+        if action_arr.shape != (64,):
+            return (0, 0), False
+
+        hot_indices = np.flatnonzero(action_arr)
+        if len(hot_indices) != 1:
+            return (0, 0), False
+
+        action_idx = int(hot_indices[0])
+        return (action_idx // 8, action_idx % 8), True
 
     @classmethod
     def board_from_obs(cls, obs: np.ndarray, player_to_move: reversi.Colour) -> reversi.Board:
@@ -104,14 +120,14 @@ class ReversiEnv(gym.Env):
         """Apply an action and return the new state.
 
         Args:
-            action: An integer in [0, 63] representing the square to place a piece
+            action: A one-hot vector of length 64 representing the square to place a piece
         Returns:
             tuple: (observation, reward, terminated, truncated, info)
         """
-        move = self._action_to_move(action)
+        move, is_valid_one_hot = self._decode_action(action)
 
         # Validate the move
-        is_valid = reversi.is_move_valid(self.board, move)
+        is_valid = is_valid_one_hot and reversi.is_move_valid(self.board, move)
         if is_valid:
             self.board = reversi.make_move(self.board, move)
 
